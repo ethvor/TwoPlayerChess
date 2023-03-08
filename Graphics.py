@@ -140,7 +140,7 @@ def renderSquares(window, frame, gameWindowWidth, gameWindowHeight):
 
 
 def imageRender(x, y, canvas, window, filename):
-    path = "/Users\ofzel/PycharmProjects/Chess/" + filename
+    path = ROOT_DIR + "/" + filename
     print(path)
     unconvertedImage = Image.open(path)
     convertedImage = ImageTk.PhotoImage(unconvertedImage)
