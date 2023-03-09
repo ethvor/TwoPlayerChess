@@ -103,10 +103,11 @@ def startGame(whitePlayerName, blackPlayerName, window, frame):
 
 def gameGui(window, whitePlayerName, blackPlayerName, gameWindowWidth, gameWindowHeight):
     frame = ctk.CTkFrame(master=window, bg_color="darkgray", fg_color="darkgray")
-    renderSquares(window, frame, gameWindowWidth, gameWindowHeight)
+    renderBoard(window, frame, gameWindowWidth, gameWindowHeight)
+    renderLabels(window,frame,whitePlayerName,blackPlayerName)
 
 
-def renderSquares(window, frame, gameWindowWidth, gameWindowHeight):
+def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
     canvas_height = gameWindowHeight * 0.85
     canvas_width = canvas_height
     canvas = ctk.CTkCanvas(master=frame, width=canvas_width, height=canvas_height)
@@ -123,7 +124,7 @@ def renderSquares(window, frame, gameWindowWidth, gameWindowHeight):
 
             y1 = canvas_height - (y * squaresize)
             y2 = canvas_height - ((y + 1) * squaresize)
-            x1 = x * squaresize
+            x1 = x * squaresize + (squaresize/32)
             x2 = x1 + squaresize
 
             centery = (y1 + y2) / 2
@@ -159,6 +160,15 @@ def renderSquares(window, frame, gameWindowWidth, gameWindowHeight):
     canvas.pack(expand=True)
     frame.pack(pady=50, padx=50, fill="both", expand=True)
 
+def renderLabels(window,frame,whitePlayerName,blackPlayerName):
+    window_width = window.winfo_width()
+    window_height = window.winfo_height()
+    frame2 = ctk.CTkFrame(master=frame,width=window_width*(7/8),height=window_height*(7/8))
+    turnlabeltext = whitePlayerName + " goes first"
+    turnlabel = ctk.CTkLabel(master=frame2,text=turnlabeltext,font=('Roboto',26),text_color='black')
+
+    turnlabel.pack()
+    frame2.pack(padx=200, pady=0, expand=True)
 
 def imageRender(x, y, canvas, window, filename, squaresize):
     path = ROOT_DIR + "/" + filename
