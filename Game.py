@@ -15,9 +15,9 @@ class Player:
 class Color:
     def __init(self, player):
         if player.number == 1:
-            self.color == "White"
+            self.color == "white"
         else:
-            self.color == "Black"
+            self.color == "black"
 
 
 class Position:
@@ -75,41 +75,41 @@ def getPointValue(piecetype):
 class Board:
     def __init__(self):
 
-        self.whiteBishop1 = Piece(Position("c1"), "Bishop", "White")
-        self.whiteBishop2 = Piece(Position("f1"), "Bishop", "White")
-        self.whiteKing = Piece(Position("e1"), "King", "White")
-        self.whiteKnight1 = Piece(Position("b1"), "Knight", "White")
-        self.whiteKnight2 = Piece(Position("g1"), "Knight", "White")
-        self.whiteQueen = Piece(Position("d1"), "Queen", "White")
-        self.whiteRook1 = Piece(Position("a1"), "Rook", "White")
-        self.whiteRook2 = Piece(Position("h1"), "Rook", "White")
+        self.whiteBishop1 = Piece(Position("c1"), "Bishop", "white")
+        self.whiteBishop2 = Piece(Position("f1"), "Bishop", "white")
+        self.whiteKing = Piece(Position("e1"), "King", "white")
+        self.whiteKnight1 = Piece(Position("b1"), "Knight", "white")
+        self.whiteKnight2 = Piece(Position("g1"), "Knight", "white")
+        self.whiteQueen = Piece(Position("d1"), "Queen", "white")
+        self.whiteRook1 = Piece(Position("a1"), "Rook", "white")
+        self.whiteRook2 = Piece(Position("h1"), "Rook", "white")
 
-        self.whitePawn1 = Piece(Position("a2"), "Pawn", "White")
-        self.whitePawn2 = Piece(Position("b2"), "Pawn", "White")
-        self.whitePawn3 = Piece(Position("c2"), "Pawn", "White")
-        self.whitePawn4 = Piece(Position("d2"), "Pawn", "White")
-        self.whitePawn5 = Piece(Position("e2"), "Pawn", "White")
-        self.whitePawn6 = Piece(Position("f2"), "Pawn", "White")
-        self.whitePawn7 = Piece(Position("g2"), "Pawn", "White")
-        self.whitePawn8 = Piece(Position("h2"), "Pawn", "White")
+        self.whitePawn1 = Piece(Position("a2"), "Pawn", "white")
+        self.whitePawn2 = Piece(Position("b2"), "Pawn", "white")
+        self.whitePawn3 = Piece(Position("c2"), "Pawn", "white")
+        self.whitePawn4 = Piece(Position("d2"), "Pawn", "white")
+        self.whitePawn5 = Piece(Position("e2"), "Pawn", "white")
+        self.whitePawn6 = Piece(Position("f2"), "Pawn", "white")
+        self.whitePawn7 = Piece(Position("g2"), "Pawn", "white")
+        self.whitePawn8 = Piece(Position("h2"), "Pawn", "white")
 
-        self.blackBishop1 = Piece(Position("c8"), "Bishop", "Black")
-        self.blackBishop2 = Piece(Position("f8"), "Bishop", "Black")
-        self.blackKing = Piece(Position("e8"), "King", "Black")
-        self.blackKnight1 = Piece(Position("b8"), "Knight", "Black")
-        self.blackKnight2 = Piece(Position("g8"), "Knight", "Black")
-        self.blackQueen = Piece(Position("d8"), "Queen", "Black")
-        self.blackRook1 = Piece(Position("a8"), "Rook", "Black")
-        self.blackRook2 = Piece(Position("h8"), "Rook", "Black")
+        self.blackBishop1 = Piece(Position("c8"), "Bishop", "black")
+        self.blackBishop2 = Piece(Position("f8"), "Bishop", "black")
+        self.blackKing = Piece(Position("e8"), "King", "black")
+        self.blackKnight1 = Piece(Position("b8"), "Knight", "black")
+        self.blackKnight2 = Piece(Position("g8"), "Knight", "black")
+        self.blackQueen = Piece(Position("d8"), "Queen", "black")
+        self.blackRook1 = Piece(Position("a8"), "Rook", "black")
+        self.blackRook2 = Piece(Position("h8"), "Rook", "black")
 
-        self.blackPawn1 = Piece(Position("a7"), "Pawn", "Black")
-        self.blackPawn2 = Piece(Position("b7"), "Pawn", "Black")
-        self.blackPawn3 = Piece(Position("c7"), "Pawn", "Black")
-        self.blackPawn4 = Piece(Position("d7"), "Pawn", "Black")
-        self.blackPawn5 = Piece(Position("e7"), "Pawn", "Black")
-        self.blackPawn6 = Piece(Position("f7"), "Pawn", "Black")
-        self.blackPawn7 = Piece(Position("g7"), "Pawn", "Black")
-        self.blackPawn8 = Piece(Position("h7"), "Pawn", "Black")
+        self.blackPawn1 = Piece(Position("a7"), "Pawn", "black")
+        self.blackPawn2 = Piece(Position("b7"), "Pawn", "black")
+        self.blackPawn3 = Piece(Position("c7"), "Pawn", "black")
+        self.blackPawn4 = Piece(Position("d7"), "Pawn", "black")
+        self.blackPawn5 = Piece(Position("e7"), "Pawn", "black")
+        self.blackPawn6 = Piece(Position("f7"), "Pawn", "black")
+        self.blackPawn7 = Piece(Position("g7"), "Pawn", "black")
+        self.blackPawn8 = Piece(Position("h7"), "Pawn", "black")
 
         startPieces = [self.whiteBishop1, self.whiteBishop2, self.whiteKing, self.whiteKnight1, self.whiteKnight2,
                        self.whiteQueen, self.whiteRook1,
@@ -123,12 +123,11 @@ class Board:
         col = ["a", "b", "c", "d", "e", "f", "g", "h"]
         row = ["1", "2", "3", "4", "5", "6", "7", "8"]
 
-        allPositions = []
+        allPositions = {}
 
         # CHANGE THIS SECTION TO INCLUDE A TUPLE THAT INCLUDES WHETHER A PIECE IS AT A GIVEN INDEX.
         # IE: allPositions = [(a1,whiteRook1), (a2,whiteKnight1), ... , (c4, None), ... , (h8,blackRook2)]
         # this change will happen in the loop down there
-
 
         for num in row:
             for char in col:
@@ -136,31 +135,25 @@ class Board:
                 position = Position(posString)
 
                 thisPosition = position.pos
-                thisPiece = "None"
+                thisPieceName = "None"
 
                 for piece in startPieces:
                     if piece.position.pos == thisPosition:
-                        thisPiece = piece.piecetype
+                        thisPieceName = piece.color + piece.piecetype
 
-                thisTuple = (thisPosition,thisPiece)
+                thisDefinition = {thisPosition: thisPieceName}
 
-                allPositions.append(thisTuple)
+                allPositions.update(thisDefinition)
 
-
-
-
-
-
-        self.posList = allPositions
-
+        self.posDict = allPositions
 
 
 """[print(piecetype, ": ", getPointValue(piecetype)) for piecetype in PieceType.getTypeList()]
-rook = Piece(Position("a1"), "Rook", "White")
+rook = Piece(Position("a1"), "Rook", "white")
 print("col: ", rook.position.column)
 print("row: ", rook.position.row)
 print("name: ", rook.piecetype)
 print("color: ", rook.color)"""
 
 board = Board()
-print(board.posList)
+print(board.posDict)

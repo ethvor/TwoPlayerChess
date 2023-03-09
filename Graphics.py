@@ -1,11 +1,13 @@
 import customtkinter as ctk
-import tkinter as tk
 import numpy as np
 from PIL import Image, ImageTk
 import os
+import Game
 
 ROOT_DIR_BACKSLASH = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = ROOT_DIR_BACKSLASH.replace("\\", "/")
+board = Game.Board()
+posDict = board.posDict
 
 
 # taken from https://stackoverflow.com/questions/14910858/how-to-specify-where-a-tkinter-window-opens
@@ -111,56 +113,73 @@ def renderSquares(window, frame, gameWindowWidth, gameWindowHeight):
 
     color = 'gray'
 
-    squaresize = canvas_height / 8
+    squaresize = int(canvas_height / 8)
 
     # got inspiration for this loop below to render a checkerboard from stackoverflow
     # https://stackoverflow.com/questions/59356899/create-checkerboard-pattern-with-python-canvas
-    # modified it slightly, but its close enough to credit the author, "furas" (Dec 16, 2019 at 13:08)
+    # modified it, but its close enough to credit the author, "furas" (Dec 16, 2019 at 13:08)
+    for y in range(8):
+        for x in range(8):
 
-    for i in range(8):
-        for j in range(8):
-            corner1 = j * squaresize
-            corner2 = i * squaresize
-            corner3 = corner1 + squaresize
-            corner4 = corner2 + squaresize
-            canvas.create_rectangle((corner1, corner2, corner3, corner4), fill=color)
-            if color == 'gray':
-                color = 'lightgray'
-            else:
+            y1 = canvas_height - (y * squaresize)
+            y2 = canvas_height - ((y + 1) * squaresize)
+            x1 = x * squaresize
+            x2 = x1 + squaresize
+
+            centery = (y1 + y2) / 2
+            centerx = (x1 + x2) / 2
+
+            column = ["a", "b", "c", "d", "e", "f", "g", "h"]
+            rows = ["1", "2", "3", "4", "5", "6", "7", "8"]
+
+            squareName = column[x] + rows[y]
+
+            doRender = True
+            pieceToRender = posDict.get(squareName)
+            if pieceToRender == "None":
+                doRender = False
+
+            print(squareName, ":", pieceToRender, doRender)
+
+            canvas.create_rectangle((x1, y1, x2, y2), fill=color)
+
+            if color == 'lightgray':
                 color = 'gray'
+            else:
+                color = 'lightgray'
 
-        if color == 'gray':
-            color = 'lightgray'
-        else:
+            if doRender:
+                renderPiece(squareName, canvas, window, centerx, centery, squaresize)
+
+        if color == 'lightgray':
             color = 'gray'
+        else:
+            color = 'lightgray'
 
     canvas.pack(expand=True)
     frame.pack(pady=50, padx=50, fill="both", expand=True)
-    renderPieces(canvas, window)
 
 
-def imageRender(x, y, canvas, window, filename):
+def imageRender(x, y, canvas, window, filename, squaresize):
     path = ROOT_DIR + "/" + filename
-    print(path)
-    unconvertedImage = Image.open(path)
+    # print(path)
+    rawImage = Image.open(path)
+    unconvertedImage = rawImage.resize((squaresize, squaresize))
+
     convertedImage = ImageTk.PhotoImage(unconvertedImage)
     ctkImage = ctk.CTkImage(unconvertedImage)
+
     canvas.create_image(x, y, image=convertedImage)
     label = ctk.CTkLabel(window, image=ctkImage)
     label.image = convertedImage
 
 
-def renderPieces(canvas, window):
-    renderPieceList = ["whiteBishop", "blackBishop", "whiteKing", "blackKing", "whiteKnight", "blackKnight",
-                       "whiteQueen",
-                       "blackQueen", "whiteRook", "blackRook", "whitePawn", "blackPawn"]
+def renderPiece(squareName, canvas, window, coordx, coordy, squaresize):
+    piecename = posDict.get(squareName)
+    filename = piecename + ".png"
 
-    for piece in renderPieceList:
-        filename = piece + ".png"
-        coordx = renderPieceList.index(piece) * 50 + 10
-        # this just splays them out so i can see that they're all there YAY
-        coordy = coordx
-        imageRender(coordx, coordy, canvas, window, filename)
+    print("Rendering a", piecename, "on", squareName)
+    imageRender(coordx, coordy, canvas, window, filename, squaresize)
 
 
 initialGui()
