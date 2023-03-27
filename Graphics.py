@@ -104,7 +104,7 @@ def startGame(whitePlayerName, blackPlayerName, window, frame):
 def gameGui(window, whitePlayerName, blackPlayerName, gameWindowWidth, gameWindowHeight):
     frame = ctk.CTkFrame(master=window, bg_color="darkgray", fg_color="darkgray")
     renderBoard(window, frame, gameWindowWidth, gameWindowHeight)
-    renderLabels(window,frame,whitePlayerName,blackPlayerName)
+    renderLabels(window, frame, whitePlayerName, blackPlayerName)
 
 
 def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
@@ -119,12 +119,13 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
     # got inspiration for this loop below to render a checkerboard from stackoverflow
     # https://stackoverflow.com/questions/59356899/create-checkerboard-pattern-with-python-canvas
     # modified it, but its close enough to credit the author, "furas" (Dec 16, 2019 at 13:08)
+
     for y in range(8):
         for x in range(8):
 
             y1 = canvas_height - (y * squaresize)
             y2 = canvas_height - ((y + 1) * squaresize)
-            x1 = x * squaresize + (squaresize/32)
+            x1 = x * squaresize + (squaresize / 32)
             x2 = x1 + squaresize
 
             centery = (y1 + y2) / 2
@@ -150,7 +151,8 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
                 color = 'lightgray'
 
             if doRender:
-                renderPiece(squareName, canvas, window, centerx, centery, squaresize)
+                renderPiece(squareName, canvas, window, centerx, centery, squaresize, color)
+
 
         if color == 'lightgray':
             color = 'gray'
@@ -160,36 +162,57 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
     canvas.pack(expand=True)
     frame.pack(pady=50, padx=50, fill="both", expand=True)
 
-def renderLabels(window,frame,whitePlayerName,blackPlayerName):
+
+
+def renderLabels(window, frame, whitePlayerName, blackPlayerName):
     window_width = window.winfo_width()
     window_height = window.winfo_height()
-    frame2 = ctk.CTkFrame(master=frame,width=window_width*(7/8),height=window_height*(7/8))
+    frame2 = ctk.CTkFrame(master=frame, width=window_width * (7 / 8), height=window_height * (7 / 8))
     turnlabeltext = whitePlayerName + " goes first"
-    turnlabel = ctk.CTkLabel(master=frame2,text=turnlabeltext,font=('Roboto',26),text_color='black')
+    turnlabel = ctk.CTkLabel(master=frame2, text=turnlabeltext, font=('Roboto', 26), text_color='black')
 
     turnlabel.pack()
     frame2.pack(padx=200, pady=0, expand=True)
 
+
 def imageRender(x, y, canvas, window, filename, squaresize):
     path = ROOT_DIR + "/" + filename
-    # print(path)
     rawImage = Image.open(path)
     unconvertedImage = rawImage.resize((squaresize, squaresize))
 
     convertedImage = ImageTk.PhotoImage(unconvertedImage)
-    ctkImage = ctk.CTkImage(unconvertedImage)
 
-    canvas.create_image(x, y, image=convertedImage)
-    label = ctk.CTkLabel(window, image=ctkImage)
-    label.image = convertedImage
+    label = ctk.CTkLabel(canvas, image=convertedImage)
+
+    label.configure(bg_color="gray")
+    label.configure(text="")
 
 
-def renderPiece(squareName, canvas, window, coordx, coordy, squaresize):
+    def move(e):
+        canvas.move(label.tag, e.x - label.winfo_width() // 2, e.y - label.winfo_height() // 2)
+
+    label.bind("<B1-Motion>", move)
+    label.bind("<Button-1>", lambda e: canvas.lift(label.tag))
+
+    label.tag = canvas.create_window(x, y, window=label)
+
+    return label
+
+
+
+
+def renderPiece(squareName, canvas, window, center_square_x, center_square_y, squaresize, color):
     piecename = posDict.get(squareName)
     filename = piecename + ".png"
 
-    print("Rendering a", piecename, "on", squareName)
-    imageRender(coordx, coordy, canvas, window, filename, squaresize)
+    #print("Rendering a", piecename, "on", squareName)
+    label = imageRender(center_square_x, center_square_y, canvas, window, filename, squaresize)
+    label.configure(bg_color="transparent")
+    label.configure(fg_color="transparent")
+    label.update()
+    print(label._fg_color)
+    print(label._bg_color)
+
 
 
 initialGui()
