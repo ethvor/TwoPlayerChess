@@ -1,0 +1,3 @@
+import Graphics
+
+Graphics.initialGui()

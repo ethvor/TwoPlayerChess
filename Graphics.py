@@ -3,12 +3,17 @@ import numpy as np
 from PIL import Image, ImageTk
 import os
 import Game
+import Board
 
 ROOT_DIR_BACKSLASH = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = ROOT_DIR_BACKSLASH.replace("\\", "/")
-board = Game.Board()
-posDict = board.posDict
+board = Board.Board()
+initialPosDict = board.initialPosDict
+currentPosDict = board.currentPosDict
+
+print(initialPosDict)
 square_centers = []
+
 
 
 # taken from https://stackoverflow.com/questions/14910858/how-to-specify-where-a-tkinter-window-opens
@@ -139,9 +144,11 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
             squareName = column[x] + rows[y]
 
             doRender = True
-            pieceToRender = posDict.get(squareName)
-            if pieceToRender == "None":
+            print(squareName)
+            pieceToRender = initialPosDict.get(squareName)
+            if pieceToRender is None:
                 doRender = False
+
 
             print(squareName, ":", pieceToRender, doRender)
 
@@ -181,8 +188,11 @@ def renderLabels(window, frame, whitePlayerName, blackPlayerName):
 
 
 def renderPiece(squareName, canvas, window, squaresize, color):
-    piecename = posDict.get(squareName)
-    filename = piecename + ".png"
+    piece = initialPosDict.get(squareName)
+
+    if piece.piecename == "NONE":
+        return
+    filename = piece.piecename + ".png"
 
     # Calculate the center of the square
     column = ["a", "b", "c", "d", "e", "f", "g", "h"]
@@ -200,16 +210,21 @@ def renderPiece(squareName, canvas, window, squaresize, color):
         image = ImageTk.PhotoImage(unconvertedImage)
         setattr(canvas, filename, image)
 
+    global oldPiece
     # Create the image on the canvas using the existing or new PhotoImage object
     piece_id = canvas.create_image(x, y, image=image, anchor='center')
     canvas.tag_bind(piece_id, "<Button-1>", lambda event: on_piece_click(canvas, piece_id, event.x, event.y))
     canvas.tag_bind(piece_id, "<B1-Motion>", lambda event, p=piece_id: (on_piece_drag(canvas, p, event.x, event.y, squaresize), canvas.tag_raise(piece_id)))
     canvas.tag_bind(piece_id, "<ButtonRelease-1>",
-                    lambda event, p=piece_id, x=x, y=y: on_piece_drop(event, squareName,canvas, p, x, y, squaresize))
+                    lambda event, p=piece_id, x=x, y=y: on_piece_drop(event, squareName, canvas, p, x, y, squaresize))
 
 def on_piece_click(canvas, piece_id, x, y):
     canvas.piece_x = x
     canvas.piece_y = y
+    closestSquare = closestSquareToCoords(x,y)[0]
+    print(closestSquare)
+
+
 
 def on_piece_drag(canvas, piece_id, x, y, squaresize):
     dx = x - canvas.piece_x
@@ -219,49 +234,39 @@ def on_piece_drag(canvas, piece_id, x, y, squaresize):
     canvas.piece_y = y
 
 
-
-
-
-
-
 def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize):
     # Check if the piece is over a square
-
 
     new_x = event.x
     new_y = event.y
 
-
     canvas_width = canvas.winfo_width()
     canvas_height = canvas.winfo_height()
 
-    if new_x > 0 and new_x <= canvas_width and new_y > 0 and new_y <= canvas_height: #check to see if coords are within bounds of canvas (needs modifying)
-        #Move to new location
-        print("MOVE TO NEW LOC")
+    if new_x > 0 and new_x <= canvas_width and new_y > 0 and new_y <= canvas_height:
+        # Move to new location
 
-        closestSquareTouple = closestSquareToCoords(new_x,new_y)
+        closestSquareTouple = closestSquareToCoords(new_x, new_y)
         closestSquareName = closestSquareTouple[0]
         closestSquareCoords = closestSquareTouple[1]
 
-        closest_square_x,closest_square_y = closestSquareCoords
+        closest_square_x, closest_square_y = closestSquareCoords
 
-        #move to new loc
-        canvas.coords(piece_id,closest_square_x,closest_square_y)
+        # Move to new loc
+        canvas.coords(piece_id, closest_square_x, closest_square_y)
 
-
-
-
+        # Update the posDict with the new square name and remove the piece from the old square
+        piecename = currentPosDict.get(squareName)
+        currentPosDict[closestSquareName] = piecename
+        currentPosDict[squareName] = "None"
 
     # If the piece is not over a square, move it back to its original square
     else:
-        print("NOT OVER SQUARE")
         closestSquareName = squareName
-        canvas.coords(piece_id, old_x,old_y)
-
+        canvas.coords(piece_id, old_x, old_y)
 
     # If the piece is dropped onto a new square, print the move
     if closestSquareName is not None:
-        print("DROPPED ONTO NEW SQUARE")
         old_square = squareName
         print(f"Moved from {old_square} to {closestSquareName}")
         canvas.update()
@@ -276,18 +281,16 @@ def closestSquareToCoords(x, y):
 
     dist = []
     for touple in centertouples:
-        cx,cy = touple
-        dist.append(np.sqrt((x-cx)**2+(y-cy)**2))
+        cx,cy = touple #center x and center y
+        dist.append(np.sqrt((x-cx)**2+(y-cy)**2)) #distance formula w/ input x,y and center_squares x,y.
 
-    min_dist = min(dist)
+    min_dist = min(dist) #finds smallest distance in distances
 
-    index = dist.index(min_dist)
+    index = dist.index(min_dist) #finds index of smallest distance
 
-    touple = square_centers[index]
+    touple = square_centers[index] #gets touple of (square name,(square_coords)) using minimum length index from above
 
     return touple
 
 
 
-initialGui()
-print(square_centers)
