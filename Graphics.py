@@ -180,22 +180,6 @@ def renderLabels(window, frame, whitePlayerName, blackPlayerName):
     frame2.pack(padx=200, pady=0, expand=True)
 
 
-def imageRender(x, y, canvas, window, filename, squaresize): #This function got to an almost working state by me, and then was perfected by GPT-4
-    path = ROOT_DIR + "/" + filename
-    rawImage = Image.open(path)
-    unconvertedImage = rawImage.resize((squaresize, squaresize))
-
-    # Store the PhotoImage object as a canvas attribute
-    canvas.image = ImageTk.PhotoImage(unconvertedImage)
-
-    piece_id = canvas.create_image(x, y, image=canvas.image, anchor='nw')
-    canvas.tag_bind(piece_id, "<Button-1>", lambda event: canvas.tag_raise(piece_id))
-    canvas.tag_bind(piece_id, "<B1-Motion>", lambda event: canvas.moveto(piece_id, event.x, event.y))
-
-
-
-
-
 def renderPiece(squareName, canvas, window, squaresize, color):
     piecename = posDict.get(squareName)
     filename = piecename + ".png"
@@ -280,6 +264,8 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
         print("DROPPED ONTO NEW SQUARE")
         old_square = squareName
         print(f"Moved from {old_square} to {closestSquareName}")
+        canvas.update()
+        canvas.pack()
 
 
 
@@ -301,16 +287,7 @@ def closestSquareToCoords(x, y):
 
     return touple
 
-def moveToNewSquare(squareName,piece_id,canvas,closest_square):
-    print("DROPPED ONTO NEW SQUARE")
-    old_square = squareName
-
-    print(f"Moved from {old_square} to {closest_square}")
-
-def returnToOldSquare():
-    print("old square")
 
 
 initialGui()
 print(square_centers)
-closestSquareToCoords(321,950)
