@@ -151,7 +151,7 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
                 color = 'lightgray'
 
             if doRender:
-                renderPiece(squareName, canvas, window, centerx, centery, squaresize, color)
+                renderPiece(squareName, canvas, window, squaresize, color)
 
 
         if color == 'lightgray':
@@ -175,43 +175,58 @@ def renderLabels(window, frame, whitePlayerName, blackPlayerName):
     frame2.pack(padx=200, pady=0, expand=True)
 
 
-def imageRender(x, y, canvas, window, filename, squaresize):
+def imageRender(x, y, canvas, window, filename, squaresize): #This function got to an almost working state by me, and then was perfected by GPT-4
     path = ROOT_DIR + "/" + filename
     rawImage = Image.open(path)
     unconvertedImage = rawImage.resize((squaresize, squaresize))
 
-    convertedImage = ImageTk.PhotoImage(unconvertedImage)
+    # Store the PhotoImage object as a canvas attribute
+    canvas.image = ImageTk.PhotoImage(unconvertedImage)
 
-    label = ctk.CTkLabel(canvas, image=convertedImage)
-
-    label.configure(bg_color="gray")
-    label.configure(text="")
-
-
-    def move(e):
-        canvas.move(label.tag, e.x - label.winfo_width() // 2, e.y - label.winfo_height() // 2)
-
-    label.bind("<B1-Motion>", move)
-    label.bind("<Button-1>", lambda e: canvas.lift(label.tag))
-
-    label.tag = canvas.create_window(x, y, window=label)
-
-    return label
+    piece_id = canvas.create_image(x, y, image=canvas.image, anchor='nw')
+    canvas.tag_bind(piece_id, "<Button-1>", lambda event: canvas.tag_raise(piece_id))
+    canvas.tag_bind(piece_id, "<B1-Motion>", lambda event: canvas.moveto(piece_id, event.x, event.y))
 
 
 
 
-def renderPiece(squareName, canvas, window, center_square_x, center_square_y, squaresize, color):
+
+def renderPiece(squareName, canvas, window, squaresize, color):
     piecename = posDict.get(squareName)
     filename = piecename + ".png"
 
-    #print("Rendering a", piecename, "on", squareName)
-    label = imageRender(center_square_x, center_square_y, canvas, window, filename, squaresize)
-    label.configure(bg_color="transparent")
-    label.configure(fg_color="transparent")
-    label.update()
-    print(label._fg_color)
-    print(label._bg_color)
+    # Calculate the center of the square
+    column = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    x = (column.index(squareName[0]) + 0.5) * squaresize
+    y = (8 - int(squareName[1]) + 0.5) * squaresize
+
+    # Check if the canvas already has a PhotoImage for the given filename
+    if hasattr(canvas, filename):
+        image = getattr(canvas, filename)
+    else:
+        # Otherwise, create a new PhotoImage and store it as an attribute of the canvas
+        path = ROOT_DIR + "/" + filename
+        rawImage = Image.open(path)
+        unconvertedImage = rawImage.resize((squaresize, squaresize))
+        image = ImageTk.PhotoImage(unconvertedImage)
+        setattr(canvas, filename, image)
+
+    # Create the image on the canvas using the existing or new PhotoImage object
+    piece_id = canvas.create_image(x, y, image=image, anchor='center')
+    canvas.tag_bind(piece_id, "<Button-1>", lambda event: on_piece_click(canvas, piece_id, event.x, event.y))
+    canvas.tag_bind(piece_id, "<B1-Motion>", lambda event, p=piece_id: (on_piece_drag(canvas, p, event.x, event.y), canvas.tag_raise(piece_id)))
+
+def on_piece_click(canvas, piece_id, x, y):
+    canvas.piece_x = x
+    canvas.piece_y = y
+
+def on_piece_drag(canvas, piece_id, x, y):
+    dx = x - canvas.piece_x
+    dy = y - canvas.piece_y
+    canvas.move(piece_id, dx, dy)
+    canvas.piece_x = x
+    canvas.piece_y = y
+
 
 
 
