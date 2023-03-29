@@ -3,7 +3,16 @@ import Piece
 import numpy as np
 import util
 
-def isKingChecked(KingPiece: Piece.Piece, board: Board.Board):
+def isKingInCheck(KingPiece: Piece.Piece, board: Board.Board):
+    checkList = getKingCheckList(KingPiece, board)
+
+    if len(checkList) == 0:
+        return False
+
+    if len(checkList) >=1:
+        return True
+
+def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
     if KingPiece.piecetype != "KING":
         print("\n\nError: checking check on non King Piece\n\n")
         return None
@@ -20,7 +29,7 @@ def isKingChecked(KingPiece: Piece.Piece, board: Board.Board):
         oppositeColorStr = "black"
 
     KingSquare = KingPiece.squareName
-    print(KingSquare)
+    #print(KingSquare)
 
     checkableSquares = getAllCheckableSquares(KingSquare)
 
@@ -28,7 +37,7 @@ def isKingChecked(KingPiece: Piece.Piece, board: Board.Board):
 
     for pieceType in pieceTypeList:
         for square in checkableSquares:
-            if util.getPieceFromSquare(square,board) is not None: #only checks squares where theres something there:
+            if util.getPieceFromSquare(square,currentPosDict) is not None: #only checks squares where theres something there:
 
                 imaginaryPiece = Piece.Piece(square, pieceType, oppositeColorStr)  # make imaginary piece at king loc
 
@@ -38,20 +47,20 @@ def isKingChecked(KingPiece: Piece.Piece, board: Board.Board):
 
                 goodShape = isLegalShape(imaginarySlope,imaginaryDistance,imaginaryRowDiff,imaginaryColDiff,imaginaryPiece)
 
-                if (imaginaryPiece.piecetype, imaginaryPiece.color) == (util.getPieceFromSquare(square,board).piecetype,util.getPieceFromSquare(square,board).color): #if imaginary piece type = real piece type At location
+                if (imaginaryPiece.piecetype, imaginaryPiece.color) == (util.getPieceFromSquare(square,currentPosDict).piecetype,util.getPieceFromSquare(square,currentPosDict).color): #if imaginary piece type = real piece type At location
 
 
                     if pieceType == "PAWN": #manual pawn override (have not written canAttack() at this time.)
                         if imaginaryDistance == np.sqrt(2):
-                            print("PAWN dist SQRT2")
+                            #print("PAWN dist SQRT2")
                             if KingPiece.color == "white" and imaginaryPiece.color == "black":
-                                print("WHITE KING BLACK PAWN")
+                                #print("WHITE KING BLACK PAWN")
                                 if int(square[1]) - int(KingSquare[1]) == 1:
                                     if (square,imaginaryPiece.piecetype, imaginaryPiece.color) not in listCheckPieceSquares: #disallow duplicates
                                         listCheckPieceSquares.append((square, imaginaryPiece.piecetype, imaginaryPiece.color))
 
                             if KingPiece.color == "black" and imaginaryPiece.color == "white":
-                                print("BLACK KING WHITE PAWN")
+                                #print("BLACK KING WHITE PAWN")
                                 if int(square[1]) - int(KingSquare[1]) == -1:
                                     if (square,imaginaryPiece.piecetype, imaginaryPiece.color) not in listCheckPieceSquares: #disallow duplicates
                                         listCheckPieceSquares.append((square, imaginaryPiece.piecetype, imaginaryPiece.color))
@@ -73,10 +82,10 @@ def isKingChecked(KingPiece: Piece.Piece, board: Board.Board):
                                     #print(pathSquares)
                         #else:
                            # print(square, "failed len(pathSquares)")
-                    else:
-                        print(pieceType,"on",square, "failed goodshape")
+                    #else:
+                        #print(pieceType,"on",square, "failed goodshape")
 
-    print(listCheckPieceSquares)
+    return listCheckPieceSquares
 
 
 

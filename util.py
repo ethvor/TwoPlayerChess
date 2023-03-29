@@ -1,8 +1,7 @@
 from Board import *
 
 
-def getPieceFromSquare(squareName,boardObject: Board):
-    currentPosDict = boardObject.currentPosDict
+def getPieceFromSquare(squareName, currentPosDict: dict):
     piece = currentPosDict.get(squareName)
     return piece
 

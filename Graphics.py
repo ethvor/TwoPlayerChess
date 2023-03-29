@@ -3,16 +3,17 @@ import numpy as np
 from PIL import Image, ImageTk
 import os
 import Board
+import Move
+import Player
+
 
 ROOT_DIR_BACKSLASH = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = ROOT_DIR_BACKSLASH.replace("\\", "/")
 board = Board.Board()
-initialPosDict = board.initialPosDict
-currentPosDict = board.currentPosDict
 
-#print(initialPosDict)
 square_centers = []
 
+oldCoordStorage = {} #this is janky but it works (global var to get info between 2 non returning functions)
 
 
 # taken from https://stackoverflow.com/questions/14910858/how-to-specify-where-a-tkinter-window-opens
@@ -134,7 +135,7 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
             x1 = x * squaresize + (squaresize / 32)
             x2 = x1 + squaresize
 
-            centery = (y1 + y2) / 2
+            centery = ((y1 + y2) / 2)
             centerx = (x1 + x2) / 2
 
             column = ["a", "b", "c", "d", "e", "f", "g", "h"]
@@ -144,7 +145,7 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
 
             doRender = True
             #print(squareName)
-            pieceToRender = initialPosDict.get(squareName)
+            pieceToRender = board.initialPosDict.get(squareName)
             if pieceToRender is None:
                 doRender = False
 
@@ -187,7 +188,7 @@ def renderLabels(window, frame, whitePlayerName, blackPlayerName):
 
 
 def renderPiece(squareName, canvas, window, squaresize, color):
-    piece = initialPosDict.get(squareName)
+    piece = board.currentPosDict.get(squareName)
 
     if piece.piecename == "NONE":
         return
@@ -196,7 +197,8 @@ def renderPiece(squareName, canvas, window, squaresize, color):
     # Calculate the center of the square
     column = ["a", "b", "c", "d", "e", "f", "g", "h"]
     x = (column.index(squareName[0]) + 0.5) * squaresize
-    y = (8 - int(squareName[1]) + 0.5) * squaresize
+    y = (8 - int(squareName[1]) + 0.5) * squaresize + 4
+    y = (8 - int(squareName[1]) + 0.5) * squaresize + 4
 
     # Check if the canvas already has a PhotoImage for the given filename
     if hasattr(canvas, filename):
@@ -209,19 +211,28 @@ def renderPiece(squareName, canvas, window, squaresize, color):
         image = ImageTk.PhotoImage(unconvertedImage)
         setattr(canvas, filename, image)
 
-    global oldPiece
+
     # Create the image on the canvas using the existing or new PhotoImage object
     piece_id = canvas.create_image(x, y, image=image, anchor='center')
     canvas.tag_bind(piece_id, "<Button-1>", lambda event: on_piece_click(canvas, piece_id, event.x, event.y))
+
     canvas.tag_bind(piece_id, "<B1-Motion>", lambda event, p=piece_id: (on_piece_drag(canvas, p, event.x, event.y, squaresize), canvas.tag_raise(piece_id)))
     canvas.tag_bind(piece_id, "<ButtonRelease-1>",
-                    lambda event, p=piece_id, x=x, y=y: on_piece_drop(event, squareName, canvas, p, x, y, squaresize))
+                    lambda event, p=piece_id: on_piece_drop(event, squareName, canvas, p, x, y, squaresize))
 
 def on_piece_click(canvas, piece_id, x, y):
     canvas.piece_x = x
     canvas.piece_y = y
-    closestSquare = closestSquareToCoords(x,y)[0]
-    print(closestSquare)
+
+
+    closestTouple = closestSquareToCoords(x,y)
+    coordTouple = closestTouple[1]
+    a,b = coordTouple
+
+    if "old" in oldCoordStorage.keys():
+        oldCoordStorage.pop("old")
+    oldCoordStorage.update({"old":(a,b)})
+
 
 
 
@@ -245,38 +256,73 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
     if new_x > 0 and new_x <= canvas_width and new_y > 0 and new_y <= canvas_height:
         # Move to new location
 
-        closestSquareTouple = closestSquareToCoords(new_x, new_y)
-        closestSquareName = closestSquareTouple[0]
-        closestSquareCoords = closestSquareTouple[1]
+        print("dict",oldCoordStorage)
+        oldSquare_x,oldSquare_y = oldCoordStorage.get("old") #from click method
+        oldSquareTouple = closestSquareToCoords(oldSquare_x,oldSquare_y)
+        oldSquare = oldSquareTouple[0]
 
-        closest_square_x, closest_square_y = closestSquareCoords
+        print(oldSquare)
+        newSquareTouple = closestSquareToCoords(new_x,new_y)
+        newSquare = newSquareTouple[0]
+        print(newSquare)
+        whitePlayer = Player.Player("white")
+        blackPlayer = Player.Player("black")
+        #CHANGE: get oldSquare from posDict
 
-        # Move to new loc
-        canvas.coords(piece_id, closest_square_x, closest_square_y)
+        move = Move.Move(oldSquare, newSquare, whitePlayer)
 
-        # Update the posDict with the new square name and remove the piece from the old square
-        piecename = currentPosDict.get(squareName)
-        currentPosDict[closestSquareName] = piecename
-        currentPosDict[squareName] = "None"
+        if Move.isMoveLegal(move, board.currentPosDict):
+            print("LEGAL MOVE")
+            closestSquareTouple = closestSquareToCoords(new_x, new_y)
+            closestSquareName = closestSquareTouple[0]
+            closestSquareCoords = closestSquareTouple[1]
 
+
+            closest_square_x, closest_square_y = closestSquareCoords
+
+            # Move to new loc
+            canvas.coords(piece_id, closest_square_x, closest_square_y)
+
+            # Update the posDict with the new square name and remove the piece from the old square
+            itemList = [item.piecetype for item in board.currentPosDict.values()]
+            squareList = [board.currentPosDict.keys()]
+
+
+
+            oldValue = board.currentPosDict.get(oldSquare)
+            board.currentPosDict.pop(oldSquare)
+            board.currentPosDict.update({newSquare:oldValue})
+
+
+            print("dict update items")
+            print(f"{oldSquare} : {oldValue}")
+            print(f"{newSquare} : {oldValue}")
     # If the piece is not over a square, move it back to its original square
-    else:
-        closestSquareName = squareName
-        canvas.coords(piece_id, old_x, old_y)
+        else:
+            canvas.coords(piece_id, oldSquare_x, oldSquare_y)
 
-    # If the piece is dropped onto a new square, print the move
-    if closestSquareName is not None:
-        old_square = squareName
-        print(f"Moved from {old_square} to {closestSquareName}")
-        canvas.update()
-        canvas.pack()
+
+    else:
+
+        print("CASE: OUTSIDE ALL SQUARES")
+        oldSquare_x, oldSquare_y = oldCoordStorage.get("old")  # from click method
+        oldSquareTouple = closestSquareToCoords(oldSquare_x, oldSquare_y) #recenter
+
+        oldSquareCoords = oldSquareTouple[1]
+        oldSqX,oldSqY = oldSquareCoords
+
+        canvas.coords(piece_id, oldSqX, oldSqY)
+
+    canvas.update()
+    canvas.pack()
 
 
 
 
 def closestSquareToCoords(x, y):
+    #print(square_centers)
     centertouples = [item[1] for item in square_centers]
-    print(centertouples)
+    #print(centertouples)
 
     dist = []
     for touple in centertouples:
@@ -290,6 +336,5 @@ def closestSquareToCoords(x, y):
     touple = square_centers[index] #gets touple of (square name,(square_coords)) using minimum length index from above
 
     return touple
-
 
 

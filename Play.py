@@ -5,7 +5,16 @@ import Board
 import Player
 import Check
 
+whitePlayer = Player.Player("white")
+blackPlayer = Player.Player("black")
 
+class GuiMoveAttempt:
+    def __init__(self):
+        self.oldSquare = "z9"
+        self.newSquare = "q0"
+        self.player = whitePlayer #hardcoded needs to be dynamic based on turn
+
+latestMoveAttempt = GuiMoveAttempt()
 
 
 
@@ -16,8 +25,7 @@ import Check
 
 
 
-whitePlayer = Player.Player("white")
-blackPlayer = Player.Player("black")
+
 
 
 
@@ -29,15 +37,12 @@ move = Move.Move(oldSquare, newSquare, whitePlayer)
 
 board = Board.Board()
 
-pathSquares = Move.getPathSquares(move)
-intersectPieces = Move.getIntersectPieces(pathSquares,board)
-intersectPieceNames = [pieceObj.piecename for pieceObj in intersectPieces]
-#print(intersectPieceNames)
-
-legal = Move.isMoveLegal(move,board)
-print(legal)
 
 
-pieceObject = Piece.Piece("d3", "KING", "black")
-print("\n\ncheck test\n\n")
-Check.isKingChecked(pieceObject,board)
+
+pieceObject = Piece.Piece("d4", "KING", "white")
+#print("\n\ncheck test\n\n")
+
+#print(Check.isKingInCheck(pieceObject,board))
+
+Graphics.initialGui()

@@ -1,7 +1,7 @@
-import Graphics
 from util import *
 import numpy as np
 import Player
+import Check
 
 
 
@@ -12,7 +12,7 @@ class Move:
         self.player = player
 
 
-def isMoveLegal(move: Move, board: Board):
+def isMoveLegal(move: Move, currentPosDict: dict):
 
     movePlayer = move.player
     moveNumber = movePlayer.gameMoveNumber
@@ -24,9 +24,15 @@ def isMoveLegal(move: Move, board: Board):
     moveCharacteristics = getMoveCharacteristics(move)
     slope,distance,rowDiff,colDiff = moveCharacteristics
 
-    movePiece = getPieceFromSquare(oldSquare,board)
-    movePieceType = movePiece.piecetype
-    print(movePieceType)
+    movePiece = currentPosDict.get(oldSquare)
+    if isinstance(movePiece, Piece.Piece):
+        movePieceType = movePiece.piecetype
+        print(movePieceType)
+    else:
+        print("failed isinstance")
+        print("object that failed:")
+        print(movePiece)
+        return False
 
     legal = True #legal by default
 
@@ -39,6 +45,7 @@ def isMoveLegal(move: Move, board: Board):
     if getTurnColor(moveNumber) != movePlayerColor:
         print("wrong color for turn")
         return False
+
 
     # 1.5: is piecetype Pawn or King
 
@@ -80,17 +87,19 @@ def isMoveLegal(move: Move, board: Board):
 
     # 3. are there multiple pieces in the path (auto fail)
     pathSquares = getPathSquares(move)
-    intersectPieces = getIntersectPieces(pathSquares,board)
+    intersectPieces = getIntersectPieces(pathSquares,currentPosDict)
     if len(intersectPieces) >= 2:
         print("multiple intersected pieces")
         return False
 
     # 4. Does the intersect path contain any of the same color pieces
     for square in pathSquares:
-        piece = getPieceFromSquare(square,board)
-        if piece.color == movePiece.color:
-            print("path contained same color piece")
-            return False
+        piece = currentPosDict.get(square)
+        if piece is not None:
+            if piece.color == movePiece.color:
+                if piece != movePiece:
+                    print("path contained same color piece")
+                    return False
 
 
 
@@ -254,11 +263,11 @@ def getPathSquares(move):
 
     return pathSquares
 
-def getIntersectPieces(pathSquares: list, board: Board):
+def getIntersectPieces(pathSquares: list, currentPosDict: dict):
 
     piecesFound = []
     for square in pathSquares:
-        piece = getPieceFromSquare(square,board)
+        piece = currentPosDict.get(square)
         if piece is not None:
             piecesFound.append(piece)
 
