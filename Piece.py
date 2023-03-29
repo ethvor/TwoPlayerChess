@@ -6,6 +6,10 @@ class Piece:
         def getTypeList():
             return ["BISHOP", "KING", "KNIGHT", "PAWN", "QUEEN", "ROOK", "NONE"]
 
+        @staticmethod
+        def getTypeListNoNone():
+            return ["BISHOP", "KING", "KNIGHT", "PAWN", "QUEEN", "ROOK"]
+
         def __init__(self, piecetype: str):
 
             piecetype = piecetype.upper()

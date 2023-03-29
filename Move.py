@@ -78,28 +78,24 @@ def isMoveLegal(move: Move, board: Board):
         print("illegal move shape")
         return False
 
+    # 3. are there multiple pieces in the path (auto fail)
+    pathSquares = getPathSquares(move)
+    intersectPieces = getIntersectPieces(pathSquares,board)
+    if len(intersectPieces) >= 2:
+        print("multiple intersected pieces")
+        return False
 
-
-
-
-
-    #3. is endpoint occupied
-    pieceAtnewSquare = getPieceFromSquare(newSquare,board)
-    if pieceAtnewSquare is not None:
-
-        #if yes:
-
-            #is occupant same color
-        if pieceAtnewSquare.color == movePiece.color:
-            print("Failed: piece color at new square matches piece color of moved piece")
+    # 4. Does the intersect path contain any of the same color pieces
+    for square in pathSquares:
+        piece = getPieceFromSquare(square,board)
+        if piece.color == movePiece.color:
+            print("path contained same color piece")
             return False
-                #if so return False
 
-                #if not continue to #4
 
-        #if no continue to #4
 
-    #4. does move put king into check
+    #5. does move put king into check
+
 
     return legal
 
@@ -187,7 +183,7 @@ def isLegalShape(slope,distance,rowDiff,colDiff,piece):
                     #print("Legal Shape")
                     return True
 
-    print("Illegal move shape WITHIN isLegalShape function")
+    #print("Illegal move shape WITHIN isLegalShape function")
     return False
 
 

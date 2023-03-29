@@ -14,3 +14,14 @@ def getTurnColor(moveNumber):
         return "black"
     else:
         return "error"
+
+def getListOfBoardSquares():
+    allPositions = []
+    col = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    row = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    for num in row:
+        for char in col:
+            squareName = char + num
+            allPositions.append(squareName)
+
+    return allPositions

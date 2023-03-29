@@ -3,7 +3,7 @@ import Move
 import Piece
 import Board
 import Player
-
+import Check
 
 
 
@@ -21,10 +21,9 @@ blackPlayer = Player.Player("black")
 
 
 
-oldSquare = "d1"
+oldSquare = "e1"
 newSquare = "d1"
 
-#pieceObject = Piece.Piece(oldSquare, "QUEEN", "white")
 
 move = Move.Move(oldSquare, newSquare, whitePlayer)
 
@@ -37,3 +36,8 @@ intersectPieceNames = [pieceObj.piecename for pieceObj in intersectPieces]
 
 legal = Move.isMoveLegal(move,board)
 print(legal)
+
+
+pieceObject = Piece.Piece("d3", "KING", "black")
+print("\n\ncheck test\n\n")
+Check.isKingChecked(pieceObject,board)
