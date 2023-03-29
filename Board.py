@@ -56,9 +56,7 @@ class Board:
 
         allPositions = {}
 
-        # CHANGE THIS SECTION TO INCLUDE A TUPLE THAT INCLUDES WHETHER A PIECE IS AT A GIVEN INDEX.
-        # IE: allPositions = [(a1,whiteRook1), (a2,whiteKnight1), ... , (c4, None), ... , (h8,blackRook2)]
-        # this change will happen in the loop down there
+
 
         for num in row:
             for char in col:

@@ -144,13 +144,13 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
             squareName = column[x] + rows[y]
 
             doRender = True
-            print(squareName)
+            #print(squareName)
             pieceToRender = initialPosDict.get(squareName)
             if pieceToRender is None:
                 doRender = False
 
 
-            print(squareName, ":", pieceToRender, doRender)
+            #print(squareName, ":", pieceToRender, doRender)
 
             canvas.create_rectangle((x1, y1, x2, y2), fill=color)
 

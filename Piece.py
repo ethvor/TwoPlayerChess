@@ -60,16 +60,9 @@ class Piece:
         self.piecetype = self.PieceType(piecetype).type
         self.color = self.PieceColor(color).color
         self.piecename = self.color + self.piecetype
+        self.hasMoved = False
 
 
-
-squareName = "g6"
-pieceType = "ROOK"
-pieceColor = "white"
-
-piece1 = Piece(squareName, pieceType, pieceColor)
-
-print(piece1.piecename)
 
 
 
