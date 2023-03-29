@@ -1,12 +1,10 @@
-from Game import Board
+from Board import *
 
 
 def getPieceFromSquare(squareName,boardObject: Board):
     currentPosDict = boardObject.currentPosDict
-    pieceTouple = currentPosDict.get(squareName)
-    pieceName = pieceTouple[0]
-    piece = pieceTouple[1]
-    return pieceTouple
+    piece = currentPosDict.get(squareName)
+    return piece
 
 def getTurnColor(moveNumber):
     remainder = moveNumber%2

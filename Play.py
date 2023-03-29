@@ -1,27 +1,39 @@
 import Graphics
 import Move
 import Piece
+import Board
+import Player
 
 
 
 
 
-piece = Piece.Piece("d4","PAWN","black")
-
-oldSquare = piece.squareName
-newSquare = "d3"
-move = Move.Move(oldSquare,newSquare,1)
-
-slope,distance,x,y = Move.getMoveCharacteristics(move)
-
-print("slope:",slope)
-print("distance:",distance)
-print("rowDif:", x)
-print("colDif:", y)
-print("piece:",piece)
 
 
-x = Move.isPathLegalShape(slope,distance,x,y,piece)
-print(x)
+
 
 #Graphics.initialGui()
+
+
+
+whitePlayer = Player.Player("white")
+blackPlayer = Player.Player("black")
+
+
+
+oldSquare = "d1"
+newSquare = "d1"
+
+#pieceObject = Piece.Piece(oldSquare, "QUEEN", "white")
+
+move = Move.Move(oldSquare, newSquare, whitePlayer)
+
+board = Board.Board()
+
+pathSquares = Move.getPathSquares(move)
+intersectPieces = Move.getIntersectPieces(pathSquares,board)
+intersectPieceNames = [pieceObj.piecename for pieceObj in intersectPieces]
+#print(intersectPieceNames)
+
+legal = Move.isMoveLegal(move,board)
+print(legal)

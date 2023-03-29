@@ -2,7 +2,6 @@ import customtkinter as ctk
 import numpy as np
 from PIL import Image, ImageTk
 import os
-import Game
 import Board
 
 ROOT_DIR_BACKSLASH = os.path.dirname(os.path.abspath(__file__))
@@ -11,7 +10,7 @@ board = Board.Board()
 initialPosDict = board.initialPosDict
 currentPosDict = board.currentPosDict
 
-print(initialPosDict)
+#print(initialPosDict)
 square_centers = []
 
 

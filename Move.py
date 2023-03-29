@@ -1,51 +1,60 @@
 import Graphics
 from util import *
 import numpy as np
+import Player
 
 
 
 class Move:
-    def __init__(self,oldSquare,newSquare,moveNumber):
-        self.oldsquare=oldSquare
-        self.newsquare=newSquare
-        self.moveNumber=moveNumber
+    def __init__(self, oldSquare, newSquare, player: Player.Player):
+        self.oldsquare = oldSquare
+        self.newsquare = newSquare
+        self.player = player
 
 
-def didMoveOccur(move: Move):
+def isMoveLegal(move: Move, board: Board):
+
+    movePlayer = move.player
+    moveNumber = movePlayer.gameMoveNumber
+    movePlayerColor = movePlayer.color
 
     oldSquare = move.oldsquare
     newSquare = move.newsquare
-    moveNumber = move.moveNumber
 
+    moveCharacteristics = getMoveCharacteristics(move)
+    slope,distance,rowDiff,colDiff = moveCharacteristics
+
+    movePiece = getPieceFromSquare(oldSquare,board)
+    movePieceType = movePiece.piecetype
+    print(movePieceType)
+
+    legal = True #legal by default
+
+    #0. did the piece move at all
     if oldSquare == newSquare:
+        print("did not move")
         return False
 
-    if isMoveLegal(oldSquare, newSquare, moveNumber):
-        return True
-
-
-def isMoveLegal(move: Move):
-    oldSquare = move.oldsquare
-    newSquare = move.newsquare
-    moveNumber = move.moveNumber
-
-    piece = getPieceFromSquare(oldSquare)
-
-
     #1. is it your turn: if not return False
+    if getTurnColor(moveNumber) != movePlayerColor:
+        print("wrong color for turn")
+        return False
 
-    #2. does the endpoint form a legal shape: if not return continue to 2.5
+    # 1.5: is piecetype Pawn or King
 
-        #2.5. does the endpoint form a special shape: if so continue to 2.9
+    if movePieceType == "PAWN" or movePieceType == "KING":
+        # 1.9: does move shape form a special move?
+
+        if isMoveSpecial(move): #func not made yet
+            1 == 1
+                #if not continue to #2
+
+                #if so continue to 1.99
 
 
-            #2.9. is piecetype Pawn or King
-                #if not return false
-
-                #if so continue to 2.99
 
 
-                    #2.99 if King: (castling)
+                    #1.99: if piecetype King: (castling)
 
                         #is distance 2? if no return false
                         ##is slope 0? if no return false
@@ -53,30 +62,52 @@ def isMoveLegal(move: Move):
                         #has this King moved before? if yes return false
                         #has the rook on this side moved before? if yes return false
 
-                        #if no: continue to 2.999
+                        #if no: continue to 1.999
 
-"""MAKE SQUARE CLASS. Square.isAttacked(returns bool)"""
 
-                            #2.999 get path Squares from King to endSquare
+
+                            #1.999 get path Squares from King to endSquare
                                     #check all squares:
                                             #for each square:
                                                 # is square occupied? if so return False (illegal)
                                                 #is square attacked? if so return False (illegal)
 
 
+    #2. does the endpoint form a legal shape: if not return continue to 2.5
+    if not isLegalShape(slope,distance,rowDiff,colDiff,movePiece):
+        print("illegal move shape")
+        return False
+
+
+
+
+
+
     #3. is endpoint occupied
+    pieceAtnewSquare = getPieceFromSquare(newSquare,board)
+    if pieceAtnewSquare is not None:
+
         #if yes:
+
             #is occupant same color
+        if pieceAtnewSquare.color == movePiece.color:
+            print("Failed: piece color at new square matches piece color of moved piece")
+            return False
                 #if so return False
 
                 #if not continue to #4
 
         #if no continue to #4
 
-    #4. for:
+    #4. does move put king into check
+
+    return legal
+
+
+def isMoveSpecial(move: Move):
+    return False
 
 def getMoveCharacteristics(move: Move):
-    print("getMoveCharacteristics called")
     allPositions = []
     col = ["a", "b", "c", "d", "e", "f", "g", "h"]
     row = ["1", "2", "3", "4", "5", "6", "7", "8"]
@@ -109,70 +140,148 @@ def getMoveCharacteristics(move: Move):
     return moveInfo
 
 
-def isPathLegalShape(slope,distance,rowDiff,colDiff,piece):
+def isLegalShape(slope,distance,rowDiff,colDiff,piece):
 
-    print("INSIDE ISPATHLEGALSHAPE")
+    #print("INSIDE ISPATHLEGALSHAPE")
 
     pieceType = piece.piecetype
-    print("pieceType:",pieceType)
+   # print("pieceType:",pieceType)
 
 
     slope = abs(slope)
-    print("abs Slope:",slope)
+    #print("abs Slope:",slope)
 
     if pieceType == "KNIGHT":
         if ((slope==2 or slope==0.5)and(distance==2.23606797749979)):
-            print("Legal Shape")
+            #print("Legal Shape")
             return True
 
     if pieceType == "BISHOP":
         if ((slope == 1.0 or slope == -1.0)):
-            print("Legal Shape")
+            #print("Legal Shape")
             return True
 
     if pieceType == "ROOK":
         if ((slope == 0 or slope == np.inf)):
-            print("Legal Shape")
+            #print("Legal Shape")
             return True
 
     if pieceType == "QUEEN":
         if ((slope == 1.0 or slope == -1.0) or (slope == 0 or slope == np.inf)):
-            print("Legal Shape")
+            #print("Legal Shape")
             return True
 
     if pieceType == "KING":
         if ((distance == 1.0 and (slope==0 or slope==np.inf))or(distance==np.sqrt(2) and slope==1)):
-            print("Legal Shape")
+            #print("Legal Shape")
             return True
 
     if pieceType == "PAWN":
         if ((slope == np.inf) and (distance == 1)):
             if piece.color == "white":
                 if rowDiff == 1:
-                    print("Legal Shape")
+                    #print("Legal Shape")
                     return True
             elif piece.color == "black":
                 if rowDiff == -1:
-                    print("Legal Shape")
+                    #print("Legal Shape")
                     return True
 
-    print("Illegal")
+    print("Illegal move shape WITHIN isLegalShape function")
     return False
 
-    doesPathHitPieces
 
-    def getPathSquares(move):
-        return True
 
-    def executeTakeMove(move):
-        1
-        piece = getPieceFromSquare()
+def getPathSquares(move):
+    moveCharacteristics = getMoveCharacteristics(move)
+    slope,distance,rowDiff,colDiff = moveCharacteristics
 
-    def executeNormalMove(move):
-        1
+    xlist = ["a", "b", "c", "d", "e", "f", "g", "h"] #col
+    ylist = ["1", "2", "3", "4", "5", "6", "7", "8"] #row
 
-    def executeCastle(move,color):
-        1
+    pathSquares = []
 
-    def executeEnPassant(move,color):
-        1
+    oldSquare = move.oldsquare
+    newSquare = move.newsquare
+
+    oldSquareX = oldSquare[0]
+    oldSquareY = oldSquare[1]
+
+    newSquareX = newSquare[0]
+    newSquareY = newSquare[1]
+
+
+
+
+
+    indexCurrentX = xlist.index(oldSquareX)
+    indexCurrentY = ylist.index(oldSquareY)
+
+
+    slopeXincrement = colDiff
+    slopeYincrement = rowDiff
+
+    #print(f"slopeXinc = {slopeXincrement}")
+    #print(f"slopeYinc = {slopeYincrement}")
+    pathSquares.append(oldSquare)
+    squareToAppend = oldSquare
+    #print(slope)
+    while squareToAppend != newSquare:
+
+        if slope ==np.inf or slope == -np.inf:
+            incrementorY = (slopeYincrement/abs(slopeYincrement))
+            indexCurrentY += incrementorY
+
+        elif slope == 0.0 or slope == 0 or slope == -0.0 or slope == -0:
+
+            incrementorX = (slopeXincrement/abs(slopeXincrement))
+            indexCurrentX += incrementorX #this is either 1 or -1. preserves direction so that this can iterate down or left too.
+
+        elif slope == 1 or slope == 1.0 or slope == -1 or slope == -1.0:
+
+            incrementorX = (slopeXincrement/abs(slopeXincrement))
+            incrementorY = (slopeYincrement/abs(slopeYincrement))
+
+            indexCurrentX += incrementorX
+            indexCurrentY += incrementorY
+
+        else:
+            return [oldSquare,newSquare]
+
+        indexCurrentX = int(indexCurrentX)
+        indexCurrentY = int(indexCurrentY)
+
+        squareToAppend = str(xlist[indexCurrentX] + ylist[indexCurrentY])
+        #print(squareToAppend)
+
+        pathSquares.append(squareToAppend)
+
+    return pathSquares
+
+def getIntersectPieces(pathSquares: list, board: Board):
+
+    piecesFound = []
+    for square in pathSquares:
+        piece = getPieceFromSquare(square,board)
+        if piece is not None:
+            piecesFound.append(piece)
+
+    piecesFound.remove(piecesFound[0]) #removes first value because i dont want it to always have 1 element (the piece you move)
+
+    return piecesFound
+
+
+
+
+def executeTakeMove(move):
+    1
+    piece = getPieceFromSquare()
+
+def executeNormalMove(move):
+    1
+
+def executeCastle(move, color):
+    1
+
+def executeEnPassant(move, color):
+    1

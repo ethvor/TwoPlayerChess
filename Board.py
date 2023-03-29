@@ -71,8 +71,3 @@ class Board:
 
         self.initialPosDict = allPositions
         self.currentPosDict = allPositions #constructed to initialPosDict because no moves have occurred
-
-
-board = Board()
-dict = board.initialPosDict
-print(dict)
