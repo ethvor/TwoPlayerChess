@@ -52,8 +52,7 @@ def isMoveLegal(move: Move, currentPosDict: dict):
     if movePieceType == "PAWN" or movePieceType == "KING":
         # 1.9: does move shape form a special move?
 
-        if isMoveSpecial(move): #func not made yet
-            1 == 1
+        doMoveSpecial(move,movePieceType) #func not made yet
                 #if not continue to #2
 
                 #if so continue to 1.99
@@ -109,8 +108,21 @@ def isMoveLegal(move: Move, currentPosDict: dict):
     return legal
 
 
-def isMoveSpecial(move: Move):
-    return False
+def doMoveSpecial(move: Move, movePieceType: Piece.Piece.PieceType):
+    moveCharacteristics = getMoveCharacteristics(move)
+    slope, distance, rowDiff, colDiff = moveCharacteristics
+
+    if distance==2 and slope==0 and movePieceType == "KING":
+        doCastle(Move, movePieceType)
+
+    if distance==np.sqrt(2) and int(slope) == 1 and movePieceType == "PAWN":
+        return doEnPassant(Move,movePieceType)
+
+def doCastle(move: Move, movePieceType: Piece.Piece.PieceType):
+    return
+
+def doEnPassant(move: Move, movePieceType: Piece.Piece.PieceType):
+    return
 
 def getMoveCharacteristics(move: Move):
     allPositions = []
