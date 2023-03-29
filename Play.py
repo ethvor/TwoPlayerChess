@@ -8,13 +8,6 @@ import Check
 whitePlayer = Player.Player("white")
 blackPlayer = Player.Player("black")
 
-class GuiMoveAttempt:
-    def __init__(self):
-        self.oldSquare = "z9"
-        self.newSquare = "q0"
-        self.player = whitePlayer #hardcoded needs to be dynamic based on turn
-
-latestMoveAttempt = GuiMoveAttempt()
 
 
 
@@ -24,6 +17,16 @@ latestMoveAttempt = GuiMoveAttempt()
 #Graphics.initialGui()
 
 
+
+"""NEXT:
+
+make canTakePiece and killPiece in Move.py.
+
+hopefully implementing these in move and legal and graphics wont be too bad
+
+make sure it fixes the instanceof glitch that occurs when pieces overlap
+
+"""
 
 
 

@@ -11,9 +11,12 @@ class Move:
         self.newsquare = newSquare
         self.player = player
 
+    def getMoveTouple(self):
+        return (self.oldsquare,self.newsquare)
 
 def isMoveLegal(move: Move, currentPosDict: dict):
 
+    print(move)
     movePlayer = move.player
     moveNumber = movePlayer.gameMoveNumber
     movePlayerColor = movePlayer.color
@@ -27,7 +30,7 @@ def isMoveLegal(move: Move, currentPosDict: dict):
     movePiece = currentPosDict.get(oldSquare)
     if isinstance(movePiece, Piece.Piece):
         movePieceType = movePiece.piecetype
-        print(movePieceType)
+        #print(movePieceType)
     else:
         print("failed isinstance")
         print("object that failed:")
@@ -52,7 +55,12 @@ def isMoveLegal(move: Move, currentPosDict: dict):
     if movePieceType == "PAWN" or movePieceType == "KING":
         # 1.9: does move shape form a special move?
 
-        doMoveSpecial(move,movePieceType) #func not made yet
+        isAllowedSpecial = getMoveSpecial(move, movePiece, currentPosDict) #func not good yet
+
+        if not isAllowedSpecial[0]:
+            return False
+
+        print("after doMoveSpecial")
                 #if not continue to #2
 
                 #if so continue to 1.99
@@ -107,22 +115,166 @@ def isMoveLegal(move: Move, currentPosDict: dict):
 
     return legal
 
+def doDoublePawn(Move, movePiece, currentPosDict):
+    return
 
-def doMoveSpecial(move: Move, movePieceType: Piece.Piece.PieceType):
+def getMoveSpecial(move: Move, movePiece: Piece.Piece,currentPosDict: dict):
     moveCharacteristics = getMoveCharacteristics(move)
     slope, distance, rowDiff, colDiff = moveCharacteristics
+    movePieceType = movePiece.piecetype
 
-    if distance==2 and slope==0 and movePieceType == "KING":
-        doCastle(Move, movePieceType)
 
-    if distance==np.sqrt(2) and int(slope) == 1 and movePieceType == "PAWN":
-        return doEnPassant(Move,movePieceType)
 
-def doCastle(move: Move, movePieceType: Piece.Piece.PieceType):
-    return
+    if not movePiece.hasMoved and distance==2 and slope==0 and movePieceType == "KING":
+        print("going to doCastle")
+        specialMove = getCastle(move, movePiece, currentPosDict)
+        return specialMove
 
-def doEnPassant(move: Move, movePieceType: Piece.Piece.PieceType):
-    return
+    if distance == 2 and int(slope) == 2 and movePieceType == "PAWN":
+        doDoublePawn(Move, movePiece, currentPosDict)
+
+    else:
+        return ["continue","FILLER_STR"]
+
+
+def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
+    oldSquare = move.oldsquare
+    newSquare = move.newsquare
+
+    xlist = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    ylist = ["1", "2", "3", "4", "5", "6", "7", "8"]
+
+    oldSquareX = xlist.index(oldSquare[0])
+    oldSquareY = ylist.index(oldSquare[1])
+
+    newSquareX = xlist.index(newSquare[0])
+    newSquareY = ylist.index(newSquare[1])
+
+
+    xDiff = newSquareX - oldSquareX
+    yDiff = newSquareY - oldSquareY
+
+
+    side = ""
+    if xDiff == 2 and yDiff == 0:
+        side = "kingside"
+
+    if xDiff == -2 and yDiff == 0:
+        side = "queenside"
+
+
+    if side == "kingside":
+        oldSquareRook = "h" + str(oldSquareY + 1)
+        newSquareRook = "d" + str(oldSquareY + 1)
+
+    elif side == "queenside":
+        oldSquareRook = "a" + str(oldSquareY + 1)
+        newSquareRook = "f" + str(oldSquareY + 1)
+
+    else:
+        print("failed kingside/queenside checks: side is not either")
+        return
+
+    castle_color = "None"
+
+    if oldSquareY + 1 == 1:
+        castle_color = "white"
+
+    if oldSquareY + 1 == 8:
+        castle_color = "black"
+
+   # print(movePiece.piecetype)
+   # print(movePiece.color)
+
+
+    print(f"side: {side}, rook square, {oldSquareRook}")
+
+    rook = currentPosDict.get(oldSquareRook)
+   # print(rook.color)
+    if rook is None:
+        print("rook fail none")
+        return
+
+    if rook.piecetype != "ROOK":
+        print("rook fail none: piece on rookSquare not rook")
+        return
+
+    if rook.color != movePiece.color:
+        print("rook fail color mismatch")
+        return
+
+    if rook.hasMoved or movePiece.hasMoved:
+        print("hasmoved fail")
+        return
+
+
+    oldSquareKing = oldSquare
+    newSquareKing = newSquare
+
+    if oldSquareKing != "e1" and oldSquareKing != "e8":
+        return
+
+    firstMoveTest = Move(oldSquareKing,oldSquareRook,move.player)
+    firstPathTrace = getPathSquares(firstMoveTest)
+    firstIntersectPieces = getIntersectPieces(firstPathTrace,currentPosDict)
+    # print(f"doCastleIntersectPieces from {oldSquare} to {rookSquare}")
+
+    if not len(firstIntersectPieces)==1 or not firstIntersectPieces[0] == rook: #is the area clear between king and rook
+        print("failed: area was not clear between king and rook")
+        return
+
+
+
+    checkMoveTest = Move(oldSquareKing,newSquareKing,move.player)
+    checkTestPathTrace = getPathSquares(checkMoveTest)
+    print("checking for any checks if king was in ",checkTestPathTrace)
+    for square in checkTestPathTrace:
+        index = checkTestPathTrace.index(square)
+        if castle_color == "white":
+            oldSquareKingTest = "e1"
+
+        print(square, index)
+        imaginaryPosDict = currentPosDict
+        imaginaryKing = Piece.Piece(square, "KING" ,castle_color)
+        imaginaryPosDict.update({square: imaginaryKing})
+        moveGoesThroughCheck = Check.isKingInCheck(imaginaryKing, imaginaryPosDict)
+
+        if oldSquareKingTest in imaginaryPosDict.keys():
+            imaginaryPosDict.pop(oldSquareKingTest)
+
+
+        else:
+            print("old king square somehow not in keys")
+            print("oldKingSquare:", oldSquareKingTest)
+
+
+            testforking = [(x,y.piecetype) for (x,y) in imaginaryPosDict.items()]
+            for item in testforking:
+                x,y = item
+                if y == "KING":
+                    print(x,"King")
+
+
+
+
+        print(square,moveGoesThroughCheck)
+
+        if moveGoesThroughCheck:
+            print("move went through check if king was on ", square)
+            return
+
+
+
+    newPosDict = None
+
+    infoList = [True, newPosDict, (oldSquareKing,newSquareKing),(oldSquareRook,newSquareRook),(castle_color,side)]
+    return infoList
+
+
+
+
+
+
 
 def getMoveCharacteristics(move: Move):
     allPositions = []
@@ -288,17 +440,3 @@ def getIntersectPieces(pathSquares: list, currentPosDict: dict):
     return piecesFound
 
 
-
-
-def executeTakeMove(move):
-    1
-    piece = getPieceFromSquare()
-
-def executeNormalMove(move):
-    1
-
-def executeCastle(move, color):
-    1
-
-def executeEnPassant(move, color):
-    1

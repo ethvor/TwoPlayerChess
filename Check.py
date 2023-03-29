@@ -3,14 +3,17 @@ import Piece
 import numpy as np
 import util
 
-def isKingInCheck(KingPiece: Piece.Piece, board: Board.Board):
-    checkList = getKingCheckList(KingPiece, board)
+def isKingInCheck(KingPiece: Piece.Piece, currentPosDict: dict):
+    checkList = getKingCheckList(KingPiece, currentPosDict)
 
     if len(checkList) == 0:
         return False
 
-    if len(checkList) >=1:
+    elif len(checkList) >=1:
         return True
+
+    else:
+        return
 
 def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
     if KingPiece.piecetype != "KING":
@@ -99,6 +102,10 @@ def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
 
 
 
+
+
+
+
 def getAllCheckableSquares(kingSquare):
     allSquares = util.getListOfBoardSquares()
 
@@ -111,6 +118,8 @@ def getAllCheckableSquares(kingSquare):
 
     checkableSquares.remove(kingSquare)
     return checkableSquares
+
+
 
 def isLegalShape(slope,distance,rowDiff,colDiff,piece):
 

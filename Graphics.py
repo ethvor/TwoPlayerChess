@@ -284,20 +284,24 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
             canvas.coords(piece_id, closest_square_x, closest_square_y)
 
             # Update the posDict with the new square name and remove the piece from the old square
-            itemList = [item.piecetype for item in board.currentPosDict.values()]
-            squareList = [board.currentPosDict.keys()]
 
+            ##########################################
+            #MOVE ACTUALLY OCCURS:
 
+            movedPiece = board.currentPosDict.get(oldSquare)
+            movedPiece.hasMoved = True
 
-            oldValue = board.currentPosDict.get(oldSquare)
             board.currentPosDict.pop(oldSquare)
-            board.currentPosDict.update({newSquare:oldValue})
+
+            board.currentPosDict.update({newSquare:movedPiece})
 
 
-            print("dict update items")
-            print(f"{oldSquare} : {oldValue}")
-            print(f"{newSquare} : {oldValue}")
-    # If the piece is not over a square, move it back to its original square
+            ##########################################
+
+            #print("dict update items")
+            #print(f"{oldSquare} : {movedPiece}")
+            #print(f"{newSquare} : {movedPiece}")
+            # If the piece is not over a square, move it back to its original square
         else:
             canvas.coords(piece_id, oldSquare_x, oldSquare_y)
 
