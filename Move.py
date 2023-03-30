@@ -16,6 +16,7 @@ class Move:
         return (self.oldsquare,self.newsquare)
 
 def isMoveLegal(move: Move, currentPosDict: dict):
+    #print("checking legality")
 
     #print(move)
     movePlayer = move.player
@@ -35,7 +36,7 @@ def isMoveLegal(move: Move, currentPosDict: dict):
         movePieceType = movePiece.piecetype
         #print(movePieceType)
     else:
-        print("failed isinstance")
+        print("failed isinstance Piece")
         print("Something has gone HORRIBLY wrong. Probably pieces somehow getting into the same square")
         print("This happens when the visual board is desynced with the backend position dictionary.")
         print("object that failed:")
@@ -46,26 +47,40 @@ def isMoveLegal(move: Move, currentPosDict: dict):
 
     #0. did the piece move at all
     if oldSquare == newSquare:
-        print("did not move")
+        print("piece did not move")
         return [False,currentPosDict] #returns a currentposDict to correct for any errors
+
+    #print("thru 0")
 
     #1. is it your turn: if not return False
     if getTurnColor(moveNumber) != movePlayerColor:
         print("wrong color for turn")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
+    #print("thru 1")
 
     # 1.5: is piecetype Pawn or King
 
+    pathSquares = getPathSquares(move)
+    intersectPieces = getIntersectPieces(pathSquares, currentPosDict)
     if movePieceType == "PAWN" or movePieceType == "KING":
         # 1.9: does move shape form a special move?
 
         isAllowedSpecial = getMoveSpecial(move, movePiece, currentPosDict) #func not good yet
 
         if isAllowedSpecial[0]: #if special move WAS good
-            return isAllowedSpecial
+            #print("special allowed")
 
-        print("after doMoveSpecial")
+
+            if (movePiece.piecetype == "PAWN" and distance == 2.0 and slope==np.inf and len(intersectPieces)>0):
+                print("stopped grasshopper case")
+                return [False,currentPosDict, "normal"]
+
+            else:
+                #print("allowed special")
+                return isAllowedSpecial
+
+        #print("after doMoveSpecial")
                 #if not continue to #2
 
                 #if so continue to 1.99
@@ -94,8 +109,19 @@ def isMoveLegal(move: Move, currentPosDict: dict):
 
     #2. does the endpoint form a legal shape: if not return continue to 2.5
     if not isLegalShape(slope,distance,rowDiff,colDiff,movePiece):
-        print("illegal move shape")
-        return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
+
+
+        #print(slope)
+        #print(distance)
+        #print(rowDiff)
+        #print(colDiff)
+        #print(movePiece.piecetype)
+
+        if not(movePiece.piecetype == "PAWN" and distance == np.sqrt(2) and abs(slope) == 1.0):
+            print("illegal move shape")
+            return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
+
+    #print("thru 2")
 
     # 3. are there multiple pieces in the path (auto fail)
     pathSquares = getPathSquares(move)
@@ -103,6 +129,8 @@ def isMoveLegal(move: Move, currentPosDict: dict):
     if len(intersectPieces) >= 2:
         print("multiple intersected pieces")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
+
+    #print("thru 3")
 
     # 4. Does the intersect path contain any of the same color pieces
     for square in pathSquares:
@@ -113,22 +141,80 @@ def isMoveLegal(move: Move, currentPosDict: dict):
                     print("path contained same color piece")
                     return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
+    #print("thru 4")
+
+    # 5. is it a take move? if take king, VICTORY
+    if len(intersectPieces) == 1:
+        isAllowedTake = getTakeMove(move, movePiece, currentPosDict)
+        if isAllowedTake is None:
+            return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
+        if isAllowedTake[0]:
+            #print("allowed take")
+            #print(isAllowedTake)
+            return isAllowedTake
 
 
-    #5. does move put king into check
+        else:
+            #print("disallowed take")
+            return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
+
+
+    #6 catch diagonal pawns
+
+    if movePieceType=="PAWN" and len(intersectPieces) == 0 and distance == np.sqrt(2) and abs(slope) == 1.0:
+        print("caught diagonal pawn move")
+        return [False, currentPosDict, "normal"]
 
     print("got through ALL checks")
-    return [True,currentPosDict,"nonspecial"]
+    return [True,currentPosDict,"normal"]
+
+def getTakeMove(move, movePiece, currentPosDict):
+
+    oldSquare = move.oldsquare
+    newSquare = move.newsquare
+    moveChar = getMoveCharacteristics(move)
+    slope,distance, rowDiff, colDiff = moveChar
+
+    takenPiece = currentPosDict.get(newSquare)
+
+    movePieceType = movePiece.piecetype
+
+    if movePieceType == "PAWN":
+        #print("takemove pawn")
+
+        #print(slope)
+        #print(distance)
+        #print(rowDiff)
+        #print(colDiff)
+
+        if slope == np.inf:
+            if takenPiece is not None:
+                #print("takemove pawn inf slope")
+                return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
+
+        elif distance == np.sqrt(2) and abs(slope) == 1.0:
+            #print("takemove pawn npsqrt2 slope")
+            if takenPiece is not None:
+                return [True, currentPosDict, "take"]
+
+
+
+    elif takenPiece.piecetype == "KING":
+        return [True,currentPosDict,"win",move.player.color]
+
+    else:
+        #print("last in takemove")
+        return [True,currentPosDict,"take"]
 
 def doDoublePawn(Move, movePiece, currentPosDict):
-    print("double pawn check")
+    #print("double pawn check")
     if movePiece.hasMoved:
         return [False, currentPosDict, "normal"]  # returns a currentposDict to correct for any errors
     elif not movePiece.hasMoved:
         return [True,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
 def getMoveSpecial(move: Move, movePiece: Piece.Piece,currentPosDict: dict):
-    print("GET MOVE SPECIAL CHECK")
+    #print("GET MOVE SPECIAL CHECK")
     moveCharacteristics = getMoveCharacteristics(move)
     slope, distance, rowDiff, colDiff = moveCharacteristics
     movePieceType = movePiece.piecetype
@@ -203,19 +289,19 @@ def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
     rook = currentPosDict.get(oldSquareRook)
    # print(rook.color)
     if rook is None:
-        print("rook fail none")
+        #print("rook fail none")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
     if rook.piecetype != "ROOK":
-        print("rook fail none: piece on rookSquare not rook")
+        #print("rook fail none: piece on rookSquare not rook")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
     if rook.color != movePiece.color:
-        print("rook fail color mismatch")
+        #print("rook fail color mismatch")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
     if rook.hasMoved or movePiece.hasMoved:
-        print("hasmoved fail")
+        #print("hasmoved fail")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
 
@@ -223,7 +309,7 @@ def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
     newSquareKing = newSquare
 
     if oldSquareKing != "e1" and oldSquareKing != "e8":
-        print("oldSquareKing not e1 or e8")
+        #print("oldSquareKing not e1 or e8")
         return [False,currentPosDict, "normal"] #returns a currentposDict to correct for any errors
 
     firstMoveTest = Move(oldSquareKing,oldSquareRook,move.player)
@@ -274,9 +360,9 @@ def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
         isChecked = Check.isKingInCheck(imaginaryKing,imaginaryPosDict)
 
 
-        print("for square = ",square,"checkable = ",checkableSquares)
+        #print("for square = ",square,"checkable = ",checkableSquares)
         checkSquares = Check.getKingCheckList(imaginaryKing,imaginaryPosDict)
-        print("King on", imaginaryKing.squareName, ": ", checkSquares)
+        #print("King on", imaginaryKing.squareName, ": ", checkSquares)
 
 
         if isChecked:

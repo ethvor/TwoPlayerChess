@@ -90,13 +90,13 @@ def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
                                     listCheckPieceSquares.append((square, imaginaryPiece.piecetype, imaginaryPiece.color))
                                     #print("intersectPieces len for ", pieceType,"on", square,": ",len(pathSquares))
                                     #print(pathSquares)
-                        else:
-                            print(pieceType,"on", square, "failed len(intersectPieces)")
-                            print("len = ", len(intersectPieces))
+                        #else:
+                            #print(pieceType,"on", square, "failed len(intersectPieces)")
+                            #print("len = ", len(intersectPieces))
 
 
-                    else:
-                        print(pieceType,"on",square, "failed goodshape")
+                    #else:
+                        #print(pieceType,"on",square, "failed goodshape")
 
     return listCheckPieceSquares
 

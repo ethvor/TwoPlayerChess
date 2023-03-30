@@ -9,6 +9,7 @@ import util
 
 
 moveList = ["Game: "]
+playerNames = {}
 
 ROOT_DIR_BACKSLASH = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = ROOT_DIR_BACKSLASH.replace("\\", "/")
@@ -16,7 +17,7 @@ board = Board.Board()
 
 square_centers = []
 
-rookStoragePieceId = {}
+pieceIdStorage = {}
 
 oldCoordStorage = {} #this is janky but it works (global var to get info between 2 non returning functions)
 
@@ -113,9 +114,12 @@ def startGame(whitePlayerName, blackPlayerName, window, frame):
 
 
 def gameGui(window, whitePlayerName, blackPlayerName, gameWindowWidth, gameWindowHeight):
+    playerNames.update({"white":whitePlayerName})
+    playerNames.update({"black":blackPlayerName})
+
     frame = ctk.CTkFrame(master=window, bg_color="darkgray", fg_color="darkgray")
     renderBoard(window, frame, gameWindowWidth, gameWindowHeight)
-    renderLabels(window, frame, whitePlayerName, blackPlayerName)
+    renderLabels(window, frame, whitePlayerName)
 
 
 def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
@@ -181,14 +185,18 @@ def renderBoard(window, frame, gameWindowWidth, gameWindowHeight):
 
 
 
-def renderLabels(window, frame, whitePlayerName, blackPlayerName):
+def renderLabels(window, frame, playerName):
     window_width = window.winfo_width()
     window_height = window.winfo_height()
     frame2 = ctk.CTkFrame(master=frame, width=window_width * (7 / 8), height=window_height * (7 / 8))
-    turnlabeltext = whitePlayerName + " goes first"
-    turnlabel = ctk.CTkLabel(master=frame2, text=turnlabeltext, font=('Roboto', 26), text_color='white')
+    if not(playerName == "" or playerName is None):
+        turnlabeltext = playerName + " goes first"
+        turnlabel = ctk.CTkLabel(master=frame2, text=turnlabeltext, font=('Roboto', 26), text_color='white')
+        turnlabel.update()
+        turnlabel.pack()
 
-    turnlabel.pack()
+
+
     frame2.pack(padx=200, pady=0, expand=True)
 
 
@@ -226,9 +234,7 @@ def renderPiece(squareName, canvas, window, squaresize, color):
     canvas.tag_bind(piece_id, "<ButtonRelease-1>",
                     lambda event, p=piece_id: on_piece_drop(event, squareName, canvas, p, x, y, squaresize))
 
-    if piece.piecetype == "ROOK": #FOR CASTLING
-        #print("rook squarename:",squareName)
-        rookStoragePieceId.update({squareName: piece_id})
+    pieceIdStorage.update({squareName: piece_id})
 
 def on_piece_click(canvas, piece_id, x, y):
     canvas.piece_x = x
@@ -280,7 +286,8 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
         #CHANGE: get oldSquare from posDict
 
         pieceToCheckColor = board.currentPosDict.get(oldSquare)
-        colorPiece = pieceToCheckColor.color
+        if pieceToCheckColor is not None:
+            colorPiece = pieceToCheckColor.color
 
         currentPlayer = Player.Player(colorPiece, len(moveList))
         #print("CURRENT COLOR: ", currentPlayer.color)
@@ -289,7 +296,7 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
         # infoList = [True, newPosDict, "castle", (oldSquareKing,newSquareKing),(oldSquareRook,newSquareRook),(castle_color,side)]
         #print(isLegal)
 
-        if isLegal[0] and isLegal[2] != "castle":
+        if isLegal[0] and isLegal[2] == "normal":
             print("LEGAL MOVE")
             closestSquareTouple = closestSquareToCoords(new_x, new_y)
             closestSquareName = closestSquareTouple[0]
@@ -322,7 +329,13 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
             moveStr = util.moveParser(movedPiece.piecetype,oldSquare,newSquare,moveList)
             moveList.append(moveStr)
 
-            print(moveList)
+
+
+            pieceIdStorage.pop(oldSquare)
+
+            pieceIdStorage.update({newSquare: piece_id})
+
+            #print(moveList)
 
             ##########################################
 
@@ -332,7 +345,7 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
             # If the piece is not over a square, move it back to its original square
 
         elif isLegal[0] and isLegal[2] == "castle": #CASTLING CASE
-            print(isLegal)
+            #print(isLegal)
             # infoList = [True, newPosDict, "castle", (oldSquareKing,newSquareKing),(oldSquareRook,newSquareRook),(castle_color,side)]
             legality,newPosDict,special_str,KingTouple,RookTouple,special_color_str = isLegal
             oldKingSquare,newKingSquare = KingTouple
@@ -341,8 +354,8 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
             board.currentPosDict = newPosDict
 
 
-            print("SQUARE CENTER")
-            print(square_centers)
+            #print("SQUARE CENTER")
+            #print(square_centers)
 
 
             centerxKing,centeryKing = getCenterCoordfromSquareName(newKingSquare)
@@ -354,10 +367,75 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
 
             canvas.coords(piece_id, centerxKing, centeryKing)
 
-            rookPieceId = rookStoragePieceId.get(oldRookSquare)
+            rookPieceId = pieceIdStorage.get(oldRookSquare)
             #print("newRookSquare", newRookSquare)
             canvas.coords(rookPieceId,centerxRook,centeryRook)
             canvas.lift(rookPieceId)
+
+            pieceIdStorage.pop(oldRookSquare)
+
+            pieceIdStorage.update({newRookSquare: rookPieceId})
+
+            pieceIdStorage.pop(oldKingSquare)
+
+            pieceIdStorage.update({newKingSquare: piece_id})
+
+        elif isLegal[0] and isLegal[2] == "take":
+            #print("in take in graphics")
+
+            #print(pieceIdStorage.keys())
+
+            #print(oldSquare)
+            #print(newSquare)
+
+            piece_id_to_take = pieceIdStorage.get(newSquare)
+
+            pieceIdStorage.pop(newSquare)
+
+            pieceIdStorage.update({newSquare:piece_id})
+
+            canvas.delete(piece_id_to_take)
+            #touple = getCenterCoordfromSquareName(oldSquare)
+            #oldx,oldy = touple
+            #canvas.coords(piece_id_to_take,oldx,oldy)
+            #canvas.coords(piece_id_to_take, 0,0)
+
+            #print("attempted tp tp newSquare item")
+
+
+            #piece_to_take = board.currentPosDict.get(newSquare)
+
+            board.currentPosDict.pop(newSquare)
+            movePiece = board.currentPosDict.get(oldSquare)
+            board.currentPosDict.pop(oldSquare)
+
+            board.currentPosDict.update({newSquare:movePiece})
+
+            newSquareCoords = getCenterCoordfromSquareName(newSquare)
+
+            newSquareX,newSquareY = newSquareCoords
+
+            canvas.coords(piece_id, newSquareX,newSquareY)
+            canvas.lift(piece_id)
+
+
+
+            moveList.append(util.moveParser(movePiece.piecetype,oldSquare,newSquare,moveList))
+            #print("exiting take in graphics")
+
+
+        elif isLegal[0] and isLegal[2] == "win":
+            winner = isLegal[3]
+            txt = winner + " wins!"
+
+            for piece_id in pieceIdStorage.values():
+                canvas.delete(piece_id)
+
+            turnlabeltext = txt
+            turnlabel = ctk.CTkLabel(master=canvas, text=turnlabeltext, font=('Roboto', 26), text_color='white', bg_color="black")
+            turnlabel.update()
+            turnlabel.pack(fill="both")
+            canvas.delete()
 
 
 
