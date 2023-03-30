@@ -5,9 +5,10 @@ import os
 import Board
 import Move
 import Player
+import util
 
 
-currentTurn = "white"
+moveList = ["Game: "]
 
 ROOT_DIR_BACKSLASH = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = ROOT_DIR_BACKSLASH.replace("\\", "/")
@@ -274,11 +275,16 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
         newSquareTouple = closestSquareToCoords(new_x,new_y)
         newSquare = newSquareTouple[0]
         #print(newSquare)
-        whitePlayer = Player.Player("white")
-        blackPlayer = Player.Player("black")
+
+
         #CHANGE: get oldSquare from posDict
 
-        move = Move.Move(oldSquare, newSquare, whitePlayer) #HARDCODED WHITEPLAYER NEED TO CHANGE
+        pieceToCheckColor = board.currentPosDict.get(oldSquare)
+        colorPiece = pieceToCheckColor.color
+
+        currentPlayer = Player.Player(colorPiece, len(moveList))
+        #print("CURRENT COLOR: ", currentPlayer.color)
+        move = Move.Move(oldSquare, newSquare, currentPlayer) #HARDCODED WHITEPLAYER NEED TO CHANGE
         isLegal = Move.isMoveLegal(move, board.currentPosDict)
         # infoList = [True, newPosDict, "castle", (oldSquareKing,newSquareKing),(oldSquareRook,newSquareRook),(castle_color,side)]
         #print(isLegal)
@@ -295,6 +301,8 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
             ##########################################
             #MOVE ACTUALLY OCCURS:
 
+
+
             closest_square_x, closest_square_y = closestSquareCoords
 
             # Move to new loc
@@ -310,6 +318,11 @@ def on_piece_drop(event, squareName, canvas, piece_id, old_x, old_y, squaresize)
 
             board.currentPosDict.update({newSquare:movedPiece})
 
+
+            moveStr = util.moveParser(movedPiece.piecetype,oldSquare,newSquare,moveList)
+            moveList.append(moveStr)
+
+            print(moveList)
 
             ##########################################
 

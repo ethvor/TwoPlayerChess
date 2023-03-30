@@ -1,4 +1,4 @@
 class Player:
-    def __init__(self, color_str):
+    def __init__(self, color_str,gameMoveNumber):
         self.color = color_str
-        self.gameMoveNumber = 1
+        self.gameMoveNumber = gameMoveNumber

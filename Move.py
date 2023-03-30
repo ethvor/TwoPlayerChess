@@ -1,4 +1,5 @@
-from util import *
+from util import getTurnColor
+import Piece
 import numpy as np
 import Player
 import Check
@@ -21,6 +22,8 @@ def isMoveLegal(move: Move, currentPosDict: dict):
     moveNumber = movePlayer.gameMoveNumber
     movePlayerColor = movePlayer.color
 
+    #("legal: gamemovenumber",moveNumber)
+
     oldSquare = move.oldsquare
     newSquare = move.newsquare
 
@@ -33,6 +36,8 @@ def isMoveLegal(move: Move, currentPosDict: dict):
         #print(movePieceType)
     else:
         print("failed isinstance")
+        print("Something has gone HORRIBLY wrong. Probably pieces somehow getting into the same square")
+        print("This happens when the visual board is desynced with the backend position dictionary.")
         print("object that failed:")
         print(movePiece)
         return [False, currentPosDict, "normal"]  # returns a currentposDict to correct for any errors

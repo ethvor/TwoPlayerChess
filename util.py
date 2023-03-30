@@ -1,5 +1,5 @@
 from Board import *
-
+from Piece import Piece
 
 def getPieceFromSquare(squareName, currentPosDict: dict):
     piece = currentPosDict.get(squareName)
@@ -24,3 +24,17 @@ def getListOfBoardSquares():
             allPositions.append(squareName)
 
     return allPositions
+
+def moveParser(piecetype: Piece.PieceType,oldsquare,newsquare,moveList: list):
+
+    number = str(len(moveList) + 1)
+    pieceStr = piecetype
+
+    if pieceStr == "KNIGHT":
+        pieceStr = "N"
+
+    else:
+        pieceStr = pieceStr[0]
+
+    finalStr =number + ". " + pieceStr + oldsquare + "->" + newsquare
+    return finalStr
