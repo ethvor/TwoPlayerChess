@@ -3,6 +3,12 @@ import Piece
 import numpy as np
 import util
 
+def CheckMateTest(currentPosDict: dict):
+
+    pieceList = currentPosDict.values()
+
+    return False
+
 def isKingInCheck(KingPiece: Piece.Piece, currentPosDict: dict):
     checkList = getKingCheckList(KingPiece, currentPosDict)
 
@@ -34,7 +40,7 @@ def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
     KingSquare = KingPiece.squareName
     #print(KingSquare)
 
-    checkableSquares = getAllCheckableSquares(KingSquare)
+    checkableSquares = getAllCheckableSquares(KingSquare,currentPosDict)
 
     listCheckPieceSquares = []
 
@@ -75,18 +81,22 @@ def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
 
                     if pieceType != "PAWN" and goodShape:
                         pathSquares = getPathSquares(square,KingSquare)
-                        pathSquares.remove(KingSquare)
-                        pathSquares.remove(square)
+                        #pathSquares.remove(KingSquare)
+                        #pathSquares.remove(square)
+                        intersectPieces = getIntersectPieces(pathSquares,currentPosDict)
 
-                        if len(pathSquares) == 0: #if theres nothing in between this imaginary piece and the king, it is checking the king
+                        if len(intersectPieces) == 1 and intersectPieces[0].piecetype == "KING": #if theres nothing in between this imaginary piece and the king, it is checking the king
                             if (square,imaginaryPiece.piecetype, imaginaryPiece.color) not in listCheckPieceSquares: #disallow duplicates
                                     listCheckPieceSquares.append((square, imaginaryPiece.piecetype, imaginaryPiece.color))
-                                    #print("pathsquares len for ", pieceType,"on", square,": ",len(pathSquares))
+                                    #print("intersectPieces len for ", pieceType,"on", square,": ",len(pathSquares))
                                     #print(pathSquares)
-                        #else:
-                           # print(square, "failed len(pathSquares)")
-                    #else:
-                        #print(pieceType,"on",square, "failed goodshape")
+                        else:
+                            print(pieceType,"on", square, "failed len(intersectPieces)")
+                            print("len = ", len(intersectPieces))
+
+
+                    else:
+                        print(pieceType,"on",square, "failed goodshape")
 
     return listCheckPieceSquares
 
@@ -106,18 +116,40 @@ def getKingCheckList(KingPiece: Piece.Piece, currentPosDict: dict):
 
 
 
-def getAllCheckableSquares(kingSquare):
+def getAllCheckableSquares(kingSquare, somePosDict: dict):
     allSquares = util.getListOfBoardSquares()
 
-    checkableSquares = []
+    checkableSquaresPrePruned = []
     for square in allSquares:
         squareCharacteristics = getMoveCharacteristics(kingSquare, square)
         slope, distance, rowDiff, colDiff = squareCharacteristics
         if abs(slope) == 1 or slope == 0 or slope == np.inf or distance <= np.sqrt(8):
-            checkableSquares.append(square)
 
-    checkableSquares.remove(kingSquare)
-    return checkableSquares
+            #we now have the correct position pattern. it looks like a 2 wide square around the king with vertical,horizontal, and diagonal lines going into infinity
+
+            #now we need to iterate through those and remove any which dont contain enemy pieces.
+
+
+            checkableSquaresPrePruned.append(square)
+
+    #print("square: ")
+    #print(kingSquare)
+    #print("someposdict: ")
+    #print(somePosDict)
+    kingPiece = somePosDict.get(kingSquare)
+    kingcolor = kingPiece.color
+
+    newCheckableSquares = []
+    for item in checkableSquaresPrePruned:
+        if item in somePosDict.keys():
+            piece = somePosDict.get(item)
+            enemycolor = piece.color
+            if kingcolor != enemycolor:
+                newCheckableSquares.append(item)
+
+    #print(newCheckableSquares)
+
+    return newCheckableSquares
 
 
 
@@ -264,19 +296,15 @@ def getPathSquares(oldSquare,newSquare):
 
     return pathSquares
 
-def getIntersectPieces(pathSquares: list, board: Board):
-
-    if len(pathSquares) == 0:
-        return []
+def getIntersectPieces(pathSquares: list, currentPosDict: dict):
 
     piecesFound = []
     for square in pathSquares:
-        piece = util.getPieceFromSquare(square,board)
+        piece = currentPosDict.get(square)
         if piece is not None:
             piecesFound.append(piece)
 
-    if len(piecesFound) != 0:
-        piecesFound.remove(piecesFound[0]) #removes first value because i dont want it to always have 1 element (the piece you move)
+    piecesFound.remove(piecesFound[0]) #removes first value because i dont want it to always have 1 element (the piece you move)
 
     return piecesFound
 
