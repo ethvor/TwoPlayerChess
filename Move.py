@@ -317,7 +317,7 @@ def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
     firstIntersectPieces = getIntersectPieces(firstPathTrace,currentPosDict)
     # print(f"doCastleIntersectPieces from {oldSquare} to {rookSquare}")
 
-    if not len(firstIntersectPieces)==1 or not firstIntersectPieces[0] == rook: #is the area clear between king and rook
+    if not len(firstIntersectPieces)==1:  #is the area clear between king and rook
         print("failed: area was not clear between king and rook")
         for item in firstIntersectPieces:
             print("intersection: ", item.piecetype, "on", item.squareName)
@@ -325,6 +325,19 @@ def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
 
 
 
+    newPosDict = currentPosDict
+    KingPiece = newPosDict.get(oldSquareKing)
+    newPosDict.pop(oldSquareKing)
+    newPosDict.update({newSquareKing:KingPiece}) #UPDATE KING POSITION ON SUCCESS
+
+    rookPiece = newPosDict.get(oldSquareRook)
+    newPosDict.pop(oldSquareRook)
+    newPosDict.update({newSquareRook:rookPiece}) #UPDATE ROOK POSITION ON SUCCESS
+
+
+    infoList = [True, newPosDict, "castle", (oldSquareKing,newSquareKing),(oldSquareRook,newSquareRook),(castle_color,side)]
+    return infoList
+    """
     checkMoveTest = Move(oldSquareKing,newSquareKing,move.player)
     checkTestPathTrace = getPathSquares(checkMoveTest)
     #print("checking for any checks if king was in ",checkTestPathTrace)
@@ -382,7 +395,7 @@ def getCastle(move: Move, movePiece: Piece.Piece, currentPosDict: dict):
 
     infoList = [True, newPosDict, "castle", (oldSquareKing,newSquareKing),(oldSquareRook,newSquareRook),(castle_color,side)]
     return infoList
-
+    """
 
 
 
